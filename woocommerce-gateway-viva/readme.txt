@@ -33,7 +33,8 @@ Accept payments seamlessly through Viva Wallet's robust and secure platform, dir
 == Screenshots ==
 
 1.  **Viva Wallet settings:** assets/screenshot-1.png 
-2.  **Checkout page:** assets/screenshot-2.png 
+2.  **Checkout page:** assets/screenshot-2.png
+3.  **Viva Wallet:** assets/screenshot-3.png
 
 == Frequently Asked Questions ==
 
