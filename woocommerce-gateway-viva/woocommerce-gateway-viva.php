@@ -8,7 +8,7 @@
  * Author URI:  https://github.com/ProgrammerNomad
  * Text Domain: woocommerce-gateway-viva
  */
-
+ 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
