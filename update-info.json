@@ -1,9 +1,9 @@
 {
-  "version": "1.0.7",
-  "download_url": "https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet/releases/download/1.0.7/woocommerce-gateway-viva.zip",
+  "version": "1.0.6",
+  "download_url": "https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet/releases/download/1.0.6/woocommerce-gateway-viva.zip",
   "sections": {
     "description": "This is the latest version of the WooCommerce Gateway Viva Wallet.",
     "changelog": "Updated plugin features and bug fixes.",
-    "commit_version": "ce80a8ea7c3b3edf7d2825c691dbac5025366547"
+    "commit_version": "3ea2c62ffe26ece63f605428d928a34c6e83fba1"
   }
 }
