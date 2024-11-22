@@ -32,17 +32,19 @@ class WC_Viva_Auto_Update {
             return $res;
         }
 
+        $plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $this->plugin_basename );
+
         $res = new stdClass();
-        $res->name           = $remote->name;
+        $res->name           = $plugin_data['Name'];
         $res->slug           = $this->plugin_basename;
         $res->version        = $remote->version;
-        $res->tested         = $remote->tested;
-        $res->requires       = $remote->requires;
-        $res->author         = $remote->author;
-        $res->author_profile = $remote->author_profile;
+        $res->tested         = isset( $plugin_data['Tested up to'] ) ? $plugin_data['Tested up to'] : '6.7.1'; // Default if not set
+        $res->requires       = isset( $plugin_data['Requires at least'] ) ? $plugin_data['Requires at least'] : '5.0.0'; // Default if not set
+        $res->author         = $plugin_data['Author'];
+        $res->author_profile = $plugin_data['AuthorURI']; 
         $res->download_link  = $remote->download_url;
         $res->trunk          = $remote->download_url;
-        $res->last_updated   = $remote->last_updated;
+        $res->last_updated   = date( 'Y-m-d h:i:s' );
         $res->sections       = array(
             'description' => $remote->sections->description,
             'changelog' => $remote->sections->changelog
@@ -58,31 +60,22 @@ class WC_Viva_Auto_Update {
 
         $remote = wp_remote_get( $this->update_info_url );
         if ( is_wp_error( $remote ) || 200 !== wp_remote_retrieve_response_code( $remote ) ) {
-            error_log( 'Error fetching update info: ' . print_r( $remote, true ) ); // Log the error
             return $transient;
         }
 
         $remote = json_decode( wp_remote_retrieve_body( $remote ) );
         if ( ! $remote ) {
-            error_log( 'Error decoding update info.' ); // Log the error
             return $transient;
         }
-
-        // Log the decoded update information and current version (for debugging)
-        error_log( 'Update info: ' . print_r( $remote, true ) ); 
-        error_log( 'Current version: ' . $transient->checked[ $this->plugin_basename ] ); 
 
         if ( version_compare( $remote->version, $transient->checked[ $this->plugin_basename ], '>' ) ) {
             $obj = new stdClass();
             $obj->slug        = $this->plugin_basename;
             $obj->new_version = $remote->version;
-            $obj->url         = 'https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet'; // Set the plugin URL
+            $obj->url         = 'https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet'; 
             $obj->package     = $remote->download_url;
             $transient->response[ $this->plugin_basename ] = $obj;
         }
-
-        // Log the transient data (for debugging)
-        error_log( 'Transient data: ' . print_r( $transient, true ) );
 
         return $transient;
     }

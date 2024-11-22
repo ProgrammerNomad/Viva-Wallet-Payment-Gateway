@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Gateway Viva Wallet
  * Plugin URI:  https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet
  * Description: Viva Wallet payment gateway for WooCommerce.
- * Version:     1.0.7
+ * Version:     1.0.6
  * Author:      Nomad Programmer
  * Author URI:  https://github.com/ProgrammerNomad
  * Text Domain: woocommerce-gateway-viva

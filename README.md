@@ -10,6 +10,7 @@ This plugin extends WooCommerce with the Viva Wallet payment gateway, allowing y
 * Saves transaction IDs to WooCommerce orders.
 * Customizable settings for gateway title, description, and demo mode.
 * Supports both live and demo environments.
+* **Automatic updates:**  Receive updates directly through your WordPress dashboard.
 
 ## Installation
 
