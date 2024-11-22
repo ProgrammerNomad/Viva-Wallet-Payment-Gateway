@@ -7,6 +7,8 @@
  * Author:      Nomad Programmer
  * Author URI:  https://github.com/ProgrammerNomad
  * Text Domain: woocommerce-gateway-viva
+ * Requires at least: 5.0.0
+ * Tested up to: 6.7.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -32,6 +34,7 @@ function init_wc_gateway_viva() {
 		return $gateways;
 	}
 }
+
 
 // Add settings link on the plugins page
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_viva_add_settings_link' );
