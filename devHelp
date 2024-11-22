@@ -1,0 +1,6 @@
+Let's say you've made some changes to your plugin and updated the version number in woocommerce-gateway-viva.php to 1.0.1. To release this new version, you would:
+
+Commit your changes: git commit -m "Updated plugin to version 1.0.1"
+Create a tag: git tag v1.0.1
+Push the tag: git push origin --tags
+This will trigger your "Release Plugin" workflow on GitHub Actions, which will then create a new release and upload the updated plugin files.

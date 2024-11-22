@@ -1,0 +1,9 @@
+{
+  "version": "1.0.3",
+  "download_url": "https://github.com/ProgrammerNomad/woocommerce-gateway-viva/releases/download/1.0.3/woocommerce-gateway-viva.zip",
+  "sections": {
+    "description": "This is the latest version of the Shiprocket Woo Shipping Plugin.",
+    "changelog": "Updated plugin features and bug fixes.",
+    "commit_version": "0fb8c954bdad3ecd1c14a4cea8a469f9f889f22d"
+  }
+}

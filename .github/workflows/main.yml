@@ -1,0 +1,45 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get the version
+        id: get_version
+        run: |
+          echo "version=$(grep 'Version:' ./woocommerce-gateway-viva/woocommerce-gateway-viva.php | cut -d ':' -f 2 | tr -d ' ')" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          body: |
+            Changes in this release:
+            - ... (list your changes here) ...
+          draft: false
+          prerelease: false
+
+      - name: Zip the plugin
+        run: zip -r woocommerce-gateway-viva.zip woocommerce-gateway-viva/ -x *.git* *.github*
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./woocommerce-gateway-viva.zip
+          asset_name: woocommerce-gateway-viva.zip
+          asset_content_type: application/zip

@@ -1,0 +1,52 @@
+name: Update update-info.json
+
+on:
+  # Trigger the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  update-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update update-info.json
+        run: |
+          # Fetch the latest version from woocommerce-gateway-viva.php
+          version=$(grep 'Version:' ./woocommerce-gateway-viva/woocommerce-gateway-viva.php | cut -d ':' -f 2 | tr -d ' ')
+          
+          # Construct the download URL (replace with your actual URL format)
+          download_url="https://github.com/ProgrammerNomad/woocommerce-gateway-viva/releases/download/$version/woocommerce-gateway-viva.zip" 
+          
+          # Create the JSON content for update-info.json
+          cat << EOF > ./update-info.json
+          {
+            "version": "$version",
+            "download_url": "$download_url",
+            "sections": {
+              "description": "This is the latest version of the Shiprocket Woo Shipping Plugin.",
+              "changelog": "Updated plugin features and bug fixes.",
+              "commit_version": "$(git rev-parse HEAD)"
+            }
+          }
+          EOF
+
+      - name: Commit Changes
+        run: |
+          git config --global user.name 'ProgrammerNomad'
+          git config --global user.email 'shiv@srapsware.com'
+          git add .
+          git commit -m "Update update-info.json"
+
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GIT_TOKEN }}
+          branch: main
