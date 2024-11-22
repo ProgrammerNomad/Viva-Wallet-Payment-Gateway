@@ -23,7 +23,7 @@ jobs:
           version=$(grep 'Version:' ./woocommerce-gateway-viva/woocommerce-gateway-viva.php | cut -d ':' -f 2 | tr -d ' ')
           
           # Construct the download URL (replace with your actual URL format)
-          download_url="https://github.com/ProgrammerNomad/woocommerce-gateway-viva/releases/download/$version/woocommerce-gateway-viva.zip" 
+          download_url="https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet/releases/download/$version/woocommerce-gateway-viva.zip"
           
           # Create the JSON content for update-info.json
           cat << EOF > ./update-info.json
