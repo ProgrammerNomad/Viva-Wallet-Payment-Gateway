@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WooCommerce Gateway Viva Wallet
- * Plugin URI:  https://yourwebsite.com/
+ * Plugin URI:  https://github.com/ProgrammerNomad/WooCommerce-Gateway-Viva-Wallet
  * Description: Viva Wallet payment gateway for WooCommerce.
  * Version:     1.0.0
- * Author:      Your Name
- * Author URI:  https://yourwebsite.com/
+ * Author:      Nomad Programmer
+ * Author URI:  https://github.com/ProgrammerNomad
  * Text Domain: woocommerce-gateway-viva
  */
 
@@ -31,4 +31,13 @@ function init_wc_gateway_viva() {
 		$gateways[] = 'WC_Gateway_Viva';
 		return $gateways;
 	}
+}
+
+
+// Add settings link on the plugins page
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_viva_add_settings_link' );
+function wc_viva_add_settings_link( $links ) {
+	$settings_link = '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=viva' ) . '">' . __( 'Settings', 'woocommerce-gateway-viva' ) . '</a>';
+	array_unshift( $links, $settings_link );
+	return $links;
 }

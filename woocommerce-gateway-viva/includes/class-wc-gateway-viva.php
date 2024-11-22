@@ -15,7 +15,7 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
 	/**
 	 * @var string
 	 */
-	public $live_source_code_list; 
+	public $live_source_code_list;
 
 
 	/**
@@ -47,49 +47,9 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
 	 * Initialize gateway settings form fields.
 	 */
 	public function init_form_fields() {
-		$this->form_fields = array(
-			'enabled' => array(
-				'title'   => __( 'Enable/Disable', 'woocommerce-gateway-viva' ),
-				'type'    => 'checkbox',
-				'label'   => __( 'Enable Viva Wallet', 'woocommerce-gateway-viva' ),
-				'default' => 'yes',
-			),
-			'title' => array(
-				'title'       => __( 'Title', 'woocommerce-gateway-viva' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-gateway-viva' ),
-				'default'     => __( 'Viva Wallet', 'woocommerce-gateway-viva' ),
-				'desc_tip'    => true,
-			),
-			'description' => array(
-				'title'       => __( 'Description', 'woocommerce-gateway-viva' ),
-				'type'        => 'textarea',
-				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-gateway-viva' ),
-				'default'     => __( 'Pay with your Viva Wallet account.', 'woocommerce-gateway-viva' ),
-				'desc_tip'    => true,
-			),
-			'client_id' => array(
-				'title'       => __( 'Client ID (Merchant ID)', 'woocommerce-gateway-viva' ),
-				'type'        => 'text',
-				'description' => __( 'Enter your Viva Wallet Client ID (Merchant ID).', 'woocommerce-gateway-viva' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'client_secret' => array(
-				'title'       => __( 'Client Secret (API Key)', 'woocommerce-gateway-viva' ),
-				'type'        => 'password', 
-				'description' => __( 'Enter your Viva Wallet Client Secret (API Key).', 'woocommerce-gateway-viva' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'live_source_code_list' => array(
-				'title'       => __( 'Live Source Code List', 'woocommerce-gateway-viva' ),
-				'type'        => 'text',
-				'description' => __( 'Provides a list with all source codes that are set in your Viva Wallet banking app.', 'woocommerce-gateway-viva' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-		);
+		// Include the settings file
+		require_once plugin_dir_path( __FILE__ ) . 'wc-viva-settings.php'; 
+		$this->form_fields = wc_viva_get_settings(); 
 	}
 
 	/**
@@ -102,7 +62,7 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 
 		// 1. Get an Access Token
-		$access_token = $this->get_viva_wallet_access_token(); 
+		$access_token = $this->get_access_token(); 
 		if ( is_wp_error( $access_token ) ) {
 			wc_add_notice( $access_token->get_error_message(), 'error' );
 			return array(
@@ -121,10 +81,13 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
 			);
 		}
 
-		// 3. Redirect to Viva Wallet Payment Page
+		// 3. Set Order Status to Pending
+		$order->update_status( 'pending', __( 'Awaiting Viva Wallet payment.', 'woocommerce-gateway-viva' ) );
+
+		// 4. Redirect to Viva Wallet Payment Page
 		return array(
 			'result'   => 'success',
-			'redirect' => $payment_order_response, // The redirect URL is returned directly
+			'redirect' => $payment_order_response, 
 		);
 	}
 
@@ -133,11 +96,25 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
 	 *
 	 * @return string|WP_Error Access token or WP_Error on failure.
 	 */
-	private function get_viva_wallet_access_token() {
-		// Base64 encode the credentials
-		$credentials = base64_encode( $this->client_id . ':' . $this->client_secret );
+	public function get_access_token() { 
+		// Get credentials based on demo mode
+		if ( $this->get_option( 'demo_mode' ) === 'yes' ) {
+			$client_id = $this->get_option( 'demo_client_id' );
+			$client_secret = $this->get_option( 'demo_client_secret' );
+		} else {
+			$client_id = $this->client_id;
+			$client_secret = $this->client_secret;
+		}
 
-		$response = wp_remote_post( 'https://accounts.vivapayments.com/connect/token', array(
+		// Base64 encode the credentials
+		$credentials = base64_encode( $client_id . ':' . $client_secret );
+
+		// Set API URL based on demo mode
+		$api_url = $this->get_option( 'demo_mode' ) === 'yes' 
+			? 'https://demo-accounts.vivapayments.com/connect/token' 
+			: 'https://accounts.vivapayments.com/connect/token';
+
+		$response = wp_remote_post( $api_url, array( 
 			'headers' => array(
 				'Authorization' => 'Basic ' . $credentials,
 				'Content-Type'  => 'application/x-www-form-urlencoded', 
@@ -184,16 +161,30 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
         $billing_country = $order->get_billing_country();
         $billing_phone = $order->get_billing_phone();
 
+		// Construct the success and cancel URLs
+		$success_url = home_url( '/wc-api/wc_vivawallet_native_success' ).'?order_id=' . $order->get_id();
+		$cancel_url = home_url( '/wc-api/wc_vivawallet_native_fail' ).'?order_id=' . $order->get_id();
+
+		// Set API URL based on demo mode
+		$api_url = $this->get_option( 'demo_mode' ) === 'yes'
+			? 'https://demo-api.vivapayments.com/checkout/v2/orders'
+			: 'https://api.vivapayments.com/checkout/v2/orders';
+
+		// Get source code list based on demo mode
+		$source_code_list = $this->get_option( 'demo_mode' ) === 'yes'
+			? $this->get_option( 'demo_source_code_list' )
+			: $this->live_source_code_list;
+
 		$request_body = [
 			'amount'           => $amount * 100, // Amount in cents
 			'customerTrns'     => $order_id,
 			'currencyCode'     => $this->getCurrencyCode( $currency ), // Using getCurrencyCode()
 			'customerName'     => $customer,
-			'sourceCode'       => $this->live_source_code_list, 
+			'sourceCode'       => $source_code_list,
 			'paymentTimeOut'   => 600, 
 			'merchantTrns'     => $order_id,
-			'successUrl'       => $this->get_return_url( $order ),
-			'failUrl'          => wc_get_checkout_url(),
+			'successUrl'       => $success_url,
+			'failUrl'          => $cancel_url,
             'customer' => [
                 'email' => $billing_email,
                 'fullName' => $customer,
@@ -205,7 +196,7 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
             'disableWallet' => true,
 		];
 
-		$response = wp_remote_post( 'https://api.vivapayments.com/checkout/v2/orders', array(
+		$response = wp_remote_post( $api_url, array(
 			'headers' => array(
 				'Authorization' => 'Bearer ' . $access_token, 
 				'Content-Type'  => 'application/json',
@@ -226,8 +217,13 @@ class WC_Gateway_Viva extends WC_Payment_Gateway {
 		}
 
 		// Construct the redirect URL using the orderCode
-		if ( isset( $body->orderCode ) ) {  
-			$redirect_url = 'https://www.vivapayments.com/web/checkout?ref=' . $body->orderCode;
+		if ( isset( $body->orderCode ) ) { 
+			// Set redirect URL based on demo mode
+			$redirect_base_url = $this->get_option( 'demo_mode' ) === 'yes'
+				? 'https://demo.vivapayments.com/web/checkout'
+				: 'https://www.vivapayments.com/web/checkout';
+
+			$redirect_url = $redirect_base_url . '?ref=' . $body->orderCode;
 			return $redirect_url;
 		} else {
 			// Handle the error 
