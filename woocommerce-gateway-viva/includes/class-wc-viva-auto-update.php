@@ -58,8 +58,6 @@ class WC_Viva_Auto_Update {
 
         $remote = wp_remote_get( $this->update_info_url );
 
-        print_r($remote); exit(); die();
-
         if ( is_wp_error( $remote ) || 200 !== wp_remote_retrieve_response_code( $remote ) ) {
             return $transient;
         }
